@@ -65,7 +65,7 @@ const EditModal: React.FC<Props> = ({ styleDef, isOpen, onClose, onSave, onDelet
   };
 
   // --- Preview Logic ---
-  
+
   const toCamelCase = (s: string) => s.replace(/-./g, x => x[1].toUpperCase());
 
   // We construct a style object for React
@@ -77,19 +77,24 @@ const EditModal: React.FC<Props> = ({ styleDef, isOpen, onClose, onSave, onDelet
     }
   });
 
+  // Check if fill is defined in current rules
+  const hasFill = rules.some(r => r.property.toLowerCase() === 'fill' && r.value.trim() !== '');
+
   const renderPreviewShape = () => {
     const commonProps = {
       className: "transition-all duration-300",
-      style: previewStyle // Apply current editing styles directly
+      style: previewStyle, // Apply current editing styles directly
+      // If no fill is defined, use a gray pattern as default
+      ...((!hasFill) && { fill: 'url(#preview-gray-pattern)', stroke: '#999', strokeWidth: 1 })
     };
 
     switch (currentShape) {
       case 'circle': return <circle cx="50" cy="50" r="35" {...commonProps} />;
       case 'triangle': return <polygon points="50,15 85,80 15,80" {...commonProps} />;
       case 'line': return <line x1="15" y1="15" x2="85" y2="85" {...commonProps} />;
-      case 'path': return <path d="M50 10 C20 10 10 40 10 50 S 20 90 50 90 S 90 60 90 50 S 80 10 50 10 Z" {...commonProps} />;
+      case 'path': return <path d="M 26.79,48.39 C 19.17,37.49 13.22,32.84 21.63,24.72 36.85,10.00 48.35,14.05 55.73,24.60 61.98,33.52 50.00,39.42 60.18,44.99 70.26,50.50 67.33,30.93 79.05,30.81 86.78,30.73 83.89,57.58 83.74,63.50 83.50,72.29 77.42,90.00 67.92,81.20 56.91,71.01 53.03,70.18 47.76,73.11 42.49,76.04 34.64,85.18 34.64,85.18 L 14.13,62.10 Z" {...commonProps} />;
       case 'square': 
-      default: return <rect x="15" y="15" width="70" height="70" rx="8" {...commonProps} />;
+      default: return <rect x="15" y="15" width="70" height="70" rx="0" {...commonProps} />;
     }
   };
 
@@ -182,6 +187,13 @@ const EditModal: React.FC<Props> = ({ styleDef, isOpen, onClose, onSave, onDelet
            <h3 className="absolute top-4 left-4 text-xs font-bold text-gray-400 uppercase tracking-wider">Live Preview</h3>
            <div className="w-48 h-48 bg-gray-200 rounded-xl shadow-inner border border-gray-300 flex items-center justify-center bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] overflow-hidden">
               <svg width="100%" height="100%" viewBox="0 0 100 100" className="overflow-visible">
+                 <defs>
+                   {/* Pattern for shapes without fill - diagonal gray lines */}
+                   <pattern id="preview-gray-pattern" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse">
+                     <rect width="8" height="8" fill="#e5e7eb" />
+                     <path d="M-1,1 l2,-2 M0,8 l8,-8 M7,9 l2,-2" stroke="#d1d5db" strokeWidth="1" />
+                   </pattern>
+                 </defs>
                  {renderPreviewShape()}
               </svg>
            </div>
